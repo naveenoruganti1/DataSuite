@@ -1,0 +1,47 @@
+services:
+  eureka-server:
+    build: ./eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - backend
+
+  gateway-service:
+    build: ./gateway-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka-server
+    networks:
+      - backend
+
+  sn-jdata-service:
+    build: ./SN_JDataSuite
+    depends_on:
+      - eureka-server
+    networks:
+      - backend
+
+  sn-xdata-service:
+    build: ./SN_XDataSuite
+    depends_on:
+      - eureka-server
+    networks:
+      - backend
+
+  sn-ydata-service:
+    build: ./SN_YDataSuite
+    depends_on:
+      - eureka-server
+    networks:
+      - backend
+
+  frontend:
+    build: ./SN_DataSuite_GUI
+    ports:
+      - "3000:80"
+    networks:
+      - backend
+
+networks:
+  backend:
