@@ -1,47 +1,93 @@
+version: '3.8'
+
 services:
   eureka-server:
-    build: ./eureka-server
+    container_name: eureka-server-container
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
     ports:
       - "8761:8761"
     networks:
-      - backend
+      - host-access
+    environment:
+      - SPRING_APPLICATION_NAME=eureka-server
 
   gateway-service:
-    build: ./gateway-service
+    container_name: gateway-service-container
+    build:
+      context: ./gateway-service
+      dockerfile: Dockerfile
+    depends_on:
+      - eureka-server
     ports:
       - "8080:8080"
-    depends_on:
-      - eureka-server
     networks:
-      - backend
+      - host-access
+    environment:
+      - SPRING_APPLICATION_NAME=gateway-service
 
   sn-jdata-service:
-    build: ./SN_JDataSuite
+    container_name: sn-jdata-service-container
+    build:
+      context: ./SN_JDataSuite
+      dockerfile: Dockerfile
     depends_on:
       - eureka-server
+      - gateway-service
+    ports:
+      - "8081-8085:8081"
     networks:
-      - backend
+      - host-access
+    environment:
+      - SPRING_APPLICATION_NAME=json-service
 
   sn-xdata-service:
-    build: ./SN_XDataSuite
+    container_name: sn-xdata-service-container
+    build:
+      context: ./SN_XDataSuite
+      dockerfile: Dockerfile
     depends_on:
       - eureka-server
+      - gateway-service
+    ports:
+      - "8086-8090:8086"
     networks:
-      - backend
+      - host-access
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - SPRING_APPLICATION_NAME=xml-service
 
   sn-ydata-service:
-    build: ./SN_YDataSuite
+    container_name: sn-ydata-service-container
+    build:
+      context: ./SN_YDataSuite
+      dockerfile: Dockerfile
     depends_on:
       - eureka-server
+      - gateway-service
+    ports:
+      - "8091-8095:8091"
     networks:
-      - backend
+      - host-access
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - SPRING_APPLICATION_NAME=yaml-service
 
   frontend:
-    build: ./SN_DataSuite_GUI
+    container_name: frontend-container
+    build:
+      context: ./SN_DataSuite_GUI
+      dockerfile: Dockerfile
     ports:
-      - "3000:80"
+      - "80:80"
     networks:
-      - backend
+      - host-access
+    environment:
+      - NODE_ENV=production
 
 networks:
-  backend:
+  host-access:
+    external: true
