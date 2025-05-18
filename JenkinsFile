@@ -12,8 +12,8 @@ pipeline {
       steps {
         script {
           def repos = [
-            [name: 'gateway-service', url: 'https://github.com/naveenoruganti1/gateway-service.git'],
             [name: 'eureka-server', url: 'https://github.com/naveenoruganti1/eureka-server.git'],
+            [name: 'gateway-service', url: 'https://github.com/naveenoruganti1/gateway-service.git'],
             [name: 'SN_JDataSuite', url: 'https://github.com/naveenoruganti1/SN_JDataSuite.git'],
             [name: 'SN_XDataSuite', url: 'https://github.com/naveenoruganti1/SN_XDataSuite.git'],
             [name: 'SN_YDataSuite', url: 'https://github.com/naveenoruganti1/SN_YDataSuite.git'],
@@ -39,7 +39,7 @@ pipeline {
     stage('Build Each Project') {
       steps {
         script {
-          def buildable = ['gateway-service', 'eureka-server', 'SN_YDataSuite', 'SN_XDataSuite', 'SN_JDataSuite']
+          def buildable = ['eureka-server', 'gateway-service', 'SN_JDataSuite', 'SN_XDataSuite', 'SN_YDataSuite']
           for (service in buildable) {
             dir(service) {
               sh 'chmod +x gradlew'
