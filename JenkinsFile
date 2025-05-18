@@ -1,0 +1,66 @@
+pipeline {
+  agent any
+
+  stages {
+    stage('Clone DataSuite Project') {
+      steps {
+        git url: 'https://github.com/naveenoruganti1/DataSuite.git', branch: 'main'
+      }
+    }
+
+    stage('Clone All Microservices') {
+      steps {
+        script {
+          def repos = [
+            [name: 'gateway-service', url: 'https://github.com/naveenoruganti1/gateway-service.git'],
+            [name: 'eureka-server', url: 'https://github.com/naveenoruganti1/eureka-server.git'],
+            [name: 'SN_JDataSuite', url: 'https://github.com/naveenoruganti1/SN_JDataSuite.git'],
+            [name: 'SN_XDataSuite', url: 'https://github.com/naveenoruganti1/SN_XDataSuite.git'],
+            [name: 'SN_YDataSuite', url: 'https://github.com/naveenoruganti1/SN_YDataSuite.git'],
+            [name: 'SN_DataSuite_GUI', url: 'https://github.com/naveenoruganti1/SN_DataSuite_GUI.git']
+          ]
+
+          for (repo in repos) {
+            def gitDir = "${repo.name}/.git"
+            if (!fileExists(gitDir)) {
+              echo "Cloning ${repo.name}..."
+              sh "git clone ${repo.url}"
+            } else {
+              echo "Pulling latest for ${repo.name}..."
+              dir(repo.name) {
+                sh 'git pull origin main || true'
+              }
+            }
+          }
+        }
+      }
+    }
+
+    stage('Build Each Project') {
+      steps {
+        script {
+          def buildable = ['gateway-service', 'eureka-server', 'SN_YDataSuite', 'SN_XDataSuite', 'SN_JDataSuite']
+          for (service in buildable) {
+            dir(service) {
+              sh 'chmod +x gradlew'
+              sh './gradlew build --build-cache --no-daemon'
+            }
+          }
+        }
+      }
+    }
+
+    stage('Run Docker Compose') {
+      steps {
+        sh 'docker network create host-access || true'
+        sh 'docker-compose up --build -d'
+      }
+    }
+  }
+
+  post {
+    always {
+      echo 'Pipeline complete.'
+    }
+  }
+}
