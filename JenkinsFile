@@ -43,7 +43,7 @@ pipeline {
           for (service in buildable) {
             dir(service) {
               sh 'chmod +x gradlew'
-              sh './gradlew build --build-cache --no-daemon'
+              sh './gradlew build --build-cache --no-daemon --info'
             }
           }
         }
